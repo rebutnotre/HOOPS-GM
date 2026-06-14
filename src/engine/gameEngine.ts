@@ -202,12 +202,12 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     const ownFg3a = Math.round(ownFga * shooting3Rate);
     const ownFg2a = Math.max(ownFga - ownFg3a, 0);
 
-    // Real NBA: league-avg 3PT% ~36%, elite shooters ~42%. rating 30→27%, 99→44%
-    const tend3Pct  = clamp(0.27 + (p.ratings.shooting3 - 30) / 69 * 0.17, 0.22, 0.44);
-    const game3Pct  = clamp(randNormal(tend3Pct, 0.05, rng), 0.15, 0.52);
-    // Real NBA: 2PT% ~52% league avg (mix of paint & mid). rating 30→38%, 99→58%
-    const base2Pct  = clamp(0.38 + ((p.ratings.finishing + p.ratings.midRange) / 2 - 30) / 69 * 0.20, 0.34, 0.60);
-    const game2Pct  = clamp(randNormal(base2Pct, 0.12, rng), 0.20, 0.75);
+    // Real NBA: league-avg 3PT% ~36%, elite ~42%. rating 30→30%, 99→42%
+    const tend3Pct  = clamp(0.30 + (p.ratings.shooting3 - 30) / 69 * 0.12, 0.25, 0.42);
+    const game3Pct  = clamp(randNormal(tend3Pct, 0.05, rng), 0.18, 0.46);
+    // Real NBA: 2PT% ~52% league avg. rating 30→40%, 99→56%
+    const base2Pct  = clamp(0.40 + ((p.ratings.finishing + p.ratings.midRange) / 2 - 30) / 69 * 0.16, 0.36, 0.56);
+    const game2Pct  = clamp(randNormal(base2Pct, 0.07, rng), 0.28, 0.64);
     const ownFg3m   = ownFg3a <= 1 ? (rng() < game3Pct ? 1 : 0) : Math.min(Math.round(ownFg3a * game3Pct), ownFg3a - 1);
     const ownFg2m   = ownFg2a <= 1 ? (rng() < game2Pct ? 1 : 0) : Math.min(Math.round(ownFg2a * game2Pct), ownFg2a - 1);
 
