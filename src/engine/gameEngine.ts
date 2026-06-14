@@ -287,15 +287,17 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
       const newFg3m = Math.round((stats.fg3m ?? 0) * scale);
       const newFg2m = Math.round(((stats.fgm ?? 0) - (stats.fg3m ?? 0)) * scale);
       const newFtm  = Math.round((stats.ftm  ?? 0) * scale);
+      const newFg3a = Math.max(Math.round((stats.fg3a ?? 0) * scale), newFg3m);
+      const newFga  = Math.max(Math.round((stats.fga  ?? 0) * scale), newFg3m + newFg2m);
       map.set(id, {
         ...stats,
         points: clamp(newFg3m * 3 + newFg2m * 2 + newFtm, 0, 60),
         fgm:    newFg3m + newFg2m,
         fg3m:   newFg3m,
-        fg3a:   Math.round((stats.fg3a ?? 0) * scale),
-        fga:    Math.round((stats.fga  ?? 0) * scale),
+        fg3a:   newFg3a,
+        fga:    newFga,
         ftm:    newFtm,
-        fta:    Math.round((stats.fta  ?? 0) * scale),
+        fta:    Math.max(Math.round((stats.fta ?? 0) * scale), newFtm),
       });
     }
   }
