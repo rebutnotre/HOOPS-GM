@@ -1,8 +1,8 @@
 import type { Team } from '../types';
 
-export const SALARY_CAP      = 145;   // soft cap
-export const LUXURY_TAX_LINE = 177;   // luxury tax threshold
-export const HARD_CAP        = 189;   // absolute ceiling (apron)
+export const SALARY_CAP      = 185;   // soft cap
+export const LUXURY_TAX_LINE = 215;   // luxury tax threshold
+export const HARD_CAP        = 230;   // absolute ceiling (apron)
 export const MLE_AMOUNT      = 13.5;  // non-taxpayer mid-level exception
 export const TAXPAYER_MLE    = 5.7;   // taxpayer mid-level exception
 export const VET_MIN         = 1.8;   // veteran minimum salary

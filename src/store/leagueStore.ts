@@ -101,7 +101,7 @@ function setupFantasyDraft(league: LeagueState, _seed: number): LeagueState {
 
   // Clear all rosters
   const teams = Object.fromEntries(
-    Object.entries(league.teams).map(([id, t]) => [id, { ...t, rosterIds: [], salary: 0, capSpace: 145 }])
+    Object.entries(league.teams).map(([id, t]) => [id, { ...t, rosterIds: [], salary: 0, capSpace: SALARY_CAP }])
   );
 
   // Build randomized draft order for round 1
@@ -168,7 +168,7 @@ function applyFantasyPick(league: LeagueState, playerId: string, teamId: string)
 
   const updatedTeams = {
     ...league.teams,
-    [teamId]: { ...team, rosterIds: newRosterIds, salary: newSalary, capSpace: parseFloat((145 - newSalary).toFixed(2)) },
+    [teamId]: { ...team, rosterIds: newRosterIds, salary: newSalary, capSpace: parseFloat((SALARY_CAP - newSalary).toFixed(2)) },
   };
   const updatedPlayers = { ...league.players, [playerId]: { ...player, teamId } };
 

@@ -1,5 +1,17 @@
 {
   "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd C:\\Users\\Admin\\basketball-gm && git add . && git diff --cached --quiet || git commit -m \"Update game\" && git push",
+            "shell": "powershell",
+            "async": true
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [
