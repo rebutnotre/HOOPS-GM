@@ -373,7 +373,7 @@ export default function Playoffs() {
 
   if (!league) return null;
 
-  const { playinGames, playoffBracket, teams, players, userTeamId, phase, gameBoxScores = {} } = league;
+  const { playinGames, playoffBracket, teams, userTeamId, phase, gameBoxScores = {} } = league;
   const noData = !playinGames && !playoffBracket;
 
   if (noData || (phase !== 'playin' && phase !== 'playoffs' && phase !== 'draft' && phase !== 'offseason')) {
