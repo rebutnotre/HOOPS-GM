@@ -1759,12 +1759,20 @@ export const useLeagueStore = create<LeagueStore>()(
             if (!pl || pl.contract.twoWay) return s;
             return s + pl.contract.salary;
           }, 0);
+          // Add fresh picks for the upcoming draft season (preserving any future picks already traded)
+          const existingNextR1 = team.draftPicks.some(p => p.round === 1 && p.year === newSeason && p.fromTeamId === tid);
+          const existingNextR2 = team.draftPicks.some(p => p.round === 2 && p.year === newSeason && p.fromTeamId === tid);
+          const freshPicks = [
+            ...(!existingNextR1 ? [{ year: newSeason, round: 1 as const, fromTeamId: tid, currentTeamId: tid }] : []),
+            ...(!existingNextR2 ? [{ year: newSeason, round: 2 as const, fromTeamId: tid, currentTeamId: tid }] : []),
+          ];
           newTeams[tid] = {
             ...team,
             rosterIds,
             salary: parseFloat(totalSal.toFixed(2)),
             capSpace: parseFloat((league.salaryCap - totalSal).toFixed(2)),
             stats: { wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, streak: 0 },
+            draftPicks: [...team.draftPicks.filter(p => p.year >= newSeason), ...freshPicks],
           };
         }
         for (const id of expiredIds) {

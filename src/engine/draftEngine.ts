@@ -49,52 +49,51 @@ export function runDraftLottery(teams: Team[], season: number, useLottery = true
   const rng = createRng(season * 54321);
 
   // Sort by record (worst first = most lottery balls)
-  const sorted = [...teams].sort((a, b) => {
-    const aWins = a.stats.wins;
-    const bWins = b.stats.wins;
-    return aWins - bWins; // worst record first
+  const sorted = [...teams].sort((a, b) => a.stats.wins - b.stats.wins);
+
+  // Build map: originalTeamId → who currently holds their R1 pick this season
+  const pickHolder: Record<string, string> = {};
+  teams.forEach(team => {
+    team.draftPicks
+      .filter(p => p.round === 1 && p.year === season)
+      .forEach(p => { pickHolder[p.fromTeamId] = p.currentTeamId; });
   });
-
-  // Assign lottery balls: 1st gets 250, 2nd gets 199, etc. (simplified NBA weights)
-  const weights = [250, 199, 156, 119, 88, 63, 43, 28, 17, 11, 8, 7, 6, 5];
-  const ballPool: string[] = [];
-
-  sorted.forEach((team, i) => {
-    const numBalls = weights[i] ?? 4;
-    for (let b = 0; b < numBalls; b++) {
-      ballPool.push(team.id);
-    }
+  // Teams who still hold their own pick (never traded it, so it doesn't appear in any draftPicks list under fromTeamId)
+  sorted.forEach(team => {
+    if (!pickHolder[team.id]) pickHolder[team.id] = team.id;
   });
-
-  // Pick top 4 lottery positions (or skip lottery and go straight by record)
-  const lotteryOrder: string[] = [];
-  const usedTeams = new Set<string>();
-  const pool = [...ballPool];
 
   if (!useLottery) {
-    // No lottery: worst record picks first (deterministic)
-    return sorted.map(t => t.id);
+    return sorted.map(t => pickHolder[t.id]);
   }
+
+  // Assign lottery balls: 1st gets 250, 2nd gets 199, etc.
+  const weights = [250, 199, 156, 119, 88, 63, 43, 28, 17, 11, 8, 7, 6, 5];
+  const ballPool: string[] = [];
+  sorted.forEach((team, i) => {
+    const numBalls = weights[i] ?? 4;
+    for (let b = 0; b < numBalls; b++) ballPool.push(team.id);
+  });
+
+  // Pick top 4 lottery positions by original team, then convert to holders
+  const lotteryOriginal: string[] = [];
+  const usedOriginal = new Set<string>();
+  const pool = [...ballPool];
 
   for (let pick = 0; pick < Math.min(4, sorted.length); pick++) {
     let winner = '';
-    while (!winner || usedTeams.has(winner)) {
-      const idx = Math.floor(rng() * pool.length);
-      winner = pool[idx];
+    while (!winner || usedOriginal.has(winner)) {
+      winner = pool[Math.floor(rng() * pool.length)];
     }
-    lotteryOrder.push(winner);
-    usedTeams.add(winner);
-    // Remove all balls for winner
+    lotteryOriginal.push(winner);
+    usedOriginal.add(winner);
     pool.splice(0, pool.length, ...pool.filter(id => id !== winner));
   }
 
-  // Rest of teams in reverse order of record (best record picks last)
-  const remaining = sorted
-    .map(t => t.id)
-    .filter(id => !usedTeams.has(id))
-    .reverse(); // best record picks last among remaining
+  const remaining = sorted.map(t => t.id).filter(id => !usedOriginal.has(id)).reverse();
 
-  return [...lotteryOrder, ...remaining];
+  // Map each slot's original team → whoever holds their pick (a team can appear 0 or 2+ times)
+  return [...lotteryOriginal, ...remaining].map(origId => pickHolder[origId]);
 }
 
 export function executeDraftPick(
@@ -117,10 +116,19 @@ export function executeDraftPick(
   player.contract = { salary: parseFloat(Math.max(1.0, (prospect.actualRating.overall - 40) / 59 * 10).toFixed(2)), yearsLeft: rookieYears };
 
   const team = league.teams[teamId];
+  // Consume the earliest R1 pick this team holds for the current draft season
+  // (they may hold their own or one acquired via trade)
+  const round = pickIndex < 30 ? 1 : 2;
+  const usedPickIdx = team.draftPicks.findIndex(p => p.round === round && p.currentTeamId === teamId);
+  const newDraftPicks = usedPickIdx >= 0
+    ? team.draftPicks.filter((_, i) => i !== usedPickIdx)
+    : team.draftPicks;
+
   const newTeams = {
     ...league.teams,
     [teamId]: {
       ...team,
+      draftPicks: newDraftPicks,
       rosterIds: [...team.rosterIds, player.id],
       salary: parseFloat((team.salary + player.contract.salary).toFixed(2)),
       capSpace: parseFloat((team.capSpace - player.contract.salary).toFixed(2)),
