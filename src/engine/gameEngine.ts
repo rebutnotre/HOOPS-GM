@@ -184,7 +184,7 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     }
 
     // Open looks that didn't convert — adds FGA without FGM to bring team FG% to realistic levels
-    const missedOpps = Math.round(ast * 0.67);
+    const missedOpps = Math.round(ast * 1.0);
     const fg3astMissed = clamp(Math.round(missedOpps * threeRate), 0, missedOpps);
     const fg2astMissed = missedOpps - fg3astMissed;
     for (let k = 0; k < fg2astMissed; k++) rcvFg2Missed[pickRecipient()]++;
@@ -212,13 +212,13 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     const ownFg3a = Math.round(ownFga * shooting3Rate);
     const ownFg2a = Math.max(ownFga - ownFg3a, 0);
 
-    // 3PT%: tied directly to shooting3 rating. rating 30→27%, 65→34%, 99→40%
-    const tend3Pct  = clamp(0.27 + (p.ratings.shooting3 - 30) / 69 * 0.13, 0.22, 0.40);
-    const game3Pct  = clamp(randNormal(tend3Pct, 0.055, rng), 0.15, 0.46);
-    // 2PT%: weighted blend of finishing (paint), midRange, and scoring per user request
+    // 3PT%: tied directly to shooting3 rating. rating 30→24%, 65→31%, 99→37%
+    const tend3Pct  = clamp(0.24 + (p.ratings.shooting3 - 30) / 69 * 0.13, 0.19, 0.37);
+    const game3Pct  = clamp(randNormal(tend3Pct, 0.045, rng), 0.12, 0.42);
+    // 2PT%: weighted blend of finishing (paint), midRange, and scoring per user request. rating 30→38%, 65→44%, 99→51%
     const raw2Rating = p.ratings.finishing * 0.40 + p.ratings.midRange * 0.35 + p.ratings.scoring * 0.25;
-    const base2Pct  = clamp(0.37 + (raw2Rating - 30) / 69 * 0.18, 0.34, 0.55);
-    const game2Pct  = clamp(randNormal(base2Pct, 0.055, rng), 0.25, 0.62);
+    const base2Pct  = clamp(0.34 + (raw2Rating - 30) / 69 * 0.17, 0.31, 0.51);
+    const game2Pct  = clamp(randNormal(base2Pct, 0.05, rng), 0.22, 0.60);
     const ownFg3m   = ownFg3a <= 1 ? (rng() < game3Pct ? 1 : 0) : Math.min(Math.round(ownFg3a * game3Pct), ownFg3a - 1);
     const ownFg2m   = ownFg2a <= 1 ? (rng() < game2Pct ? 1 : 0) : Math.min(Math.round(ownFg2a * game2Pct), ownFg2a - 1);
 
