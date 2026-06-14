@@ -7,9 +7,11 @@ export function playerValue(p: Player): number {
   const baseValue = Math.pow((overall - 40) / 59, 2.5) * 100;
   const ageMult = p.age <= 23 ? 1.1 + (0.2 * ((p.potential - overall) / 30))
     : p.age <= 28 ? 1.0
-    : p.age <= 31 ? 0.85
-    : p.age <= 33 ? 0.65
-    : 0.40;
+    : p.age <= 30 ? 0.92
+    : p.age <= 32 ? 0.82
+    : p.age <= 34 ? 0.72
+    : p.age <= 36 ? 0.55
+    : 0.38;
   const salaryPenalty = Math.max(0, p.contract.salary - baseValue * 0.45) * 0.5;
   return Math.max(0, baseValue * ageMult - salaryPenalty);
 }
