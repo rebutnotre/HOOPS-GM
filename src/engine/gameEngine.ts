@@ -227,7 +227,7 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     const pts = totalFg3m * 3 + totalFg2m * 2 + ftm;
 
     // Rebounds / steals / blocks
-    const rebBase = p.position === 'C' ? 13 : p.position === 'PF' ? 10 : p.position === 'SF' ? 7 : p.position === 'SG' ? 5 : 4;
+    const rebBase = p.position === 'C' ? 10 : p.position === 'PF' ? 7.5 : p.position === 'SF' ? 5 : p.position === 'SG' ? 3.5 : 2.5;
     const reb = clamp(Math.round(randNormal((p.ratings.rebounding / 99) * rebBase, 2.5, rng) * minFactor), 0, 25);
     const stl = clamp(Math.round(randNormal((p.ratings.defense / 99) * 2.5, 0.8, rng) * minFactor), 0, 5);
     const blkBase   = p.position === 'C' ? 2.5 : p.position === 'PF' ? 1.5 : p.position === 'SF' ? 0.8 : 0.3;
