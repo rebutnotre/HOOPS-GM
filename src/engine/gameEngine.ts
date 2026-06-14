@@ -212,11 +212,14 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     const ownFg2m   = ownFg2a <= 1 ? (rng() < game2Pct ? 1 : 0) : Math.min(Math.round(ownFg2a * game2Pct), ownFg2a - 1);
 
     // Combine own makes with assisted makes received
+    // Add extra missed attempts for assisted shots (in reality not every open look goes in)
+    const assistedMisses2 = Math.round(rcvFg2[i] * clamp(randNormal(0.35, 0.1, rng), 0.15, 0.6));
+    const assistedMisses3 = Math.round(rcvFg3[i] * clamp(randNormal(0.55, 0.1, rng), 0.3, 0.75));
     const totalFg3m = ownFg3m + rcvFg3[i];
     const totalFg2m = ownFg2m + rcvFg2[i];
     const _totalFgm  = totalFg3m + totalFg2m; void _totalFgm;
-    const totalFga  = ownFga + rcvFg2[i] + rcvFg3[i];
-    const totalFg3a = ownFg3a + rcvFg3[i];
+    const totalFga  = ownFga + rcvFg2[i] + rcvFg3[i] + assistedMisses2 + assistedMisses3;
+    const totalFg3a = ownFg3a + rcvFg3[i] + assistedMisses3;
 
     // Free throws: only own FGAs generate trips to the line
     const ftRate    = clamp((p.ratings.finishing - 40) / 180 + 0.04, 0.02, 0.18);
