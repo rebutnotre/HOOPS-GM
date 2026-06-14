@@ -1,129 +1,7 @@
 import React, { useState } from 'react';
 import { useLeagueStore } from '../store/leagueStore';
-import type { PlayoffSeries, PlayinGame, GameBoxScore, PlayerStats } from '../types';
-
-// ── Box Score Modal ──────────────────────────────────────────────────────────
-
-function statVal(stats: Partial<PlayerStats>, key: keyof PlayerStats): number {
-  return (stats[key] as number) ?? 0;
-}
-
-function fmt(n: number, dec = 0) {
-  return n.toFixed(dec);
-}
-
-function BoxScoreModal({ box, teams, players, onClose }: {
-  box: GameBoxScore;
-  teams: Record<string, import('../types').Team>;
-  players: Record<string, import('../types').Player>;
-  onClose: () => void;
-}) {
-  const homeTeam = teams[box.homeTeamId];
-  const awayTeam = teams[box.awayTeamId];
-
-  function TeamTable({ teamId, stats, score }: {
-    teamId: string;
-    stats: Record<string, Partial<PlayerStats>>;
-    score: number;
-  }) {
-    const team = teams[teamId];
-    const tc = team?.primaryColor ?? '#6c63ff';
-    const rows = Object.entries(stats)
-      .map(([pid, s]) => ({ player: players[pid], stats: s }))
-      .filter(r => r.player)
-      .sort((a, b) => statVal(b.stats, 'points') - statVal(a.stats, 'points'));
-
-    return (
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-3 h-3 rounded-full shrink-0" style={{ background: tc }} />
-          <span className="font-black text-white text-base">{team?.city} {team?.name}</span>
-          <span className="ml-auto text-2xl font-black" style={{ color: tc }}>{score}</span>
-        </div>
-        <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #1e2235' }}>
-          <table className="w-full text-xs">
-            <thead>
-              <tr style={{ background: '#12151e', color: '#6b7280' }}>
-                <th className="text-left px-3 py-2 font-semibold">Player</th>
-                <th className="px-2 py-2 font-semibold text-center">PTS</th>
-                <th className="px-2 py-2 font-semibold text-center">REB</th>
-                <th className="px-2 py-2 font-semibold text-center">AST</th>
-                <th className="px-2 py-2 font-semibold text-center">STL</th>
-                <th className="px-2 py-2 font-semibold text-center">BLK</th>
-                <th className="px-2 py-2 font-semibold text-center">FG</th>
-                <th className="px-2 py-2 font-semibold text-center">3P</th>
-                <th className="px-2 py-2 font-semibold text-center">TO</th>
-                <th className="px-2 py-2 font-semibold text-center">MIN</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(({ player, stats: s }, i) => {
-                const pts = statVal(s, 'points');
-                const isTop = i === 0;
-                return (
-                  <tr key={player.id}
-                    style={{ background: i % 2 === 0 ? '#0d0f17' : '#0a0c14', borderTop: '1px solid #1a1d2e' }}>
-                    <td className="px-3 py-2">
-                      <span className="font-semibold" style={{ color: isTop ? tc : '#c5c9d8' }}>{player.name}</span>
-                      <span className="ml-1.5 text-xs" style={{ color: '#4b5563' }}>{player.position}</span>
-                    </td>
-                    <td className="px-2 py-2 text-center font-bold" style={{ color: pts >= 20 ? tc : '#e2e8f0' }}>{pts}</td>
-                    <td className="px-2 py-2 text-center" style={{ color: '#c5c9d8' }}>{statVal(s, 'rebounds')}</td>
-                    <td className="px-2 py-2 text-center" style={{ color: '#c5c9d8' }}>{statVal(s, 'assists')}</td>
-                    <td className="px-2 py-2 text-center" style={{ color: '#c5c9d8' }}>{statVal(s, 'steals')}</td>
-                    <td className="px-2 py-2 text-center" style={{ color: '#c5c9d8' }}>{statVal(s, 'blocks')}</td>
-                    <td className="px-2 py-2 text-center" style={{ color: '#6b7280' }}>
-                      {statVal(s, 'fgm')}-{statVal(s, 'fga')}
-                    </td>
-                    <td className="px-2 py-2 text-center" style={{ color: '#6b7280' }}>
-                      {statVal(s, 'fg3m')}-{statVal(s, 'fg3a')}
-                    </td>
-                    <td className="px-2 py-2 text-center" style={{ color: '#6b7280' }}>{statVal(s, 'turnovers')}</td>
-                    <td className="px-2 py-2 text-center" style={{ color: '#6b7280' }}>{fmt(statVal(s, 'minutes'))}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}
-      onClick={onClose}>
-      <div className="w-full max-w-3xl rounded-2xl overflow-hidden fade-in-up"
-        style={{ background: '#0d0f17', border: '1px solid #1e2235', maxHeight: '88vh', overflowY: 'auto' }}
-        onClick={e => e.stopPropagation()}>
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4"
-          style={{ borderBottom: '1px solid #1e2235', background: '#0a0c14' }}>
-          <div>
-            <div className="text-xs font-black uppercase tracking-widest mb-0.5" style={{ color: '#6b7280' }}>
-              Box Score
-            </div>
-            <div className="text-base font-black text-white">
-              {awayTeam?.abbreviation} {box.awayScore} — {box.homeScore} {homeTeam?.abbreviation}
-            </div>
-          </div>
-          <button onClick={onClose}
-            className="text-sm px-3 py-1.5 rounded-lg transition-all hover:opacity-80"
-            style={{ background: '#131628', color: '#8b90a7', border: '1px solid #1e2440' }}>
-            Close
-          </button>
-        </div>
-
-        <div className="p-5">
-          <TeamTable teamId={box.awayTeamId} stats={box.awayStats} score={box.awayScore} />
-          <TeamTable teamId={box.homeTeamId} stats={box.homeStats} score={box.homeScore} />
-        </div>
-      </div>
-    </div>
-  );
-}
+import type { PlayoffSeries, PlayinGame, GameBoxScore } from '../types';
+import BoxScoreModal from '../components/BoxScoreModal';
 
 // ── Sim Button ────────────────────────────────────────────────────────────────
 
@@ -307,14 +185,14 @@ function BracketCard({ series, teams, userTeamId, onSimSeries, onShowSeries }: {
 
 // ── Series game list modal ────────────────────────────────────────────────────
 
-function SeriesModal({ series, teams, boxScores, players, onClose }: {
+function SeriesModal({ series, league, boxScores, onClose }: {
   series: PlayoffSeries;
-  teams: Record<string, import('../types').Team>;
+  league: import('../types').LeagueState;
   boxScores: Record<string, GameBoxScore>;
-  players: Record<string, import('../types').Player>;
   onClose: () => void;
 }) {
   const [selectedBox, setSelectedBox] = useState<GameBoxScore | null>(null);
+  const { teams } = league;
   const teamA = teams[series.teamAId];
   const teamB = teams[series.teamBId];
   const tcA = teamA?.primaryColor ?? '#6c63ff';
@@ -322,7 +200,7 @@ function SeriesModal({ series, teams, boxScores, players, onClose }: {
   const roundName = ['', 'First Round', 'Conference Semifinals', 'Conference Finals', 'NBA Finals'][series.round];
 
   if (selectedBox) {
-    return <BoxScoreModal box={selectedBox} teams={teams} players={players} onClose={() => setSelectedBox(null)} />;
+    return <BoxScoreModal boxScore={selectedBox} league={league} onClose={() => setSelectedBox(null)} />;
   }
 
   return (
@@ -639,17 +517,15 @@ export default function Playoffs() {
       {selectedSeries && (
         <SeriesModal
           series={selectedSeries}
-          teams={teams}
+          league={league}
           boxScores={gameBoxScores}
-          players={players}
           onClose={() => setSelectedSeries(null)}
         />
       )}
       {selectedBox && (
         <BoxScoreModal
-          box={selectedBox}
-          teams={teams}
-          players={players}
+          boxScore={selectedBox}
+          league={league}
           onClose={() => setSelectedBox(null)}
         />
       )}
