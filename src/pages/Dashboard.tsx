@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import type { DevelopmentEntry } from '../types';
 import { useLeagueStore, calcGMTier, cancelSim } from '../store/leagueStore';
 import type { SimType } from '../store/leagueStore';
 import PlayerPhoto from '../components/PlayerPhoto';
@@ -195,6 +196,14 @@ export default function Dashboard() {
   const { addRipple: addSimRipple, rippleEls: simRippleEls } = useRipple();
   const { openPlayer } = usePlayerModal();
   const [selectedBoxScore, setSelectedBoxScore] = useState<GameBoxScore | null>(null);
+  const [devReport, setDevReport] = useState<DevelopmentEntry[] | null>(null);
+  const prevPhase = useRef(league?.phase);
+  useEffect(() => {
+    if (prevPhase.current === 'offseason' && league?.phase === 'regular' && league.developmentLog?.length) {
+      setDevReport(league.developmentLog);
+    }
+    prevPhase.current = league?.phase;
+  }, [league?.phase, league?.developmentLog]);
   if (!league) return null;
 
   const userTeam = league.teams[league.userTeamId];
@@ -652,6 +661,84 @@ export default function Dashboard() {
       {selectedBoxScore && (
         <BoxScoreModal boxScore={selectedBoxScore} league={league} onClose={() => setSelectedBoxScore(null)} />
       )}
+
+      {devReport && (() => {
+        const myEntries = devReport
+          .filter(e => e.teamId === league.userTeamId)
+          .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+        const improved = myEntries.filter(e => e.delta > 0);
+        const regressed = myEntries.filter(e => e.delta < 0);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }} onClick={() => setDevReport(null)}>
+            <div className="w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl" style={{ background: '#0d0f17', border: '1px solid #2e3248' }} onClick={e => e.stopPropagation()}>
+              <div className="px-6 py-5 border-b sticky top-0 z-10 flex items-center justify-between" style={{ borderColor: '#1e2235', background: '#0d0f17' }}>
+                <div>
+                  <div className="font-black text-white text-lg">Player Development</div>
+                  <div className="text-xs mt-0.5" style={{ color: '#8b90a7' }}>End of {league.season - 1} Season</div>
+                </div>
+                <button onClick={() => setDevReport(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-lg hover:opacity-80 transition-all" style={{ background: '#1e2235', color: '#8b90a7' }}>✕</button>
+              </div>
+              <div className="p-6 space-y-5">
+                {improved.length > 0 && (
+                  <div>
+                    <div className="text-xs font-bold uppercase mb-2" style={{ color: '#4ade80' }}>Improved</div>
+                    <div className="space-y-2">
+                      {improved.map(e => {
+                        const p = league.players[e.playerId];
+                        const newOvr = p?.ratings.overall ?? (e.delta + 0);
+                        const oldOvr = newOvr - e.delta;
+                        return (
+                          <div key={e.playerId} className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: '#12151e', border: '1px solid #1e2235' }}>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-white text-sm truncate">{e.playerName}</div>
+                              <div className="text-xs mt-0.5" style={{ color: '#8b90a7' }}>{e.reason}</div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-sm font-mono" style={{ color: '#6b7280' }}>{oldOvr}</span>
+                              <span style={{ color: '#374151' }}>→</span>
+                              <span className="text-sm font-black text-white">{newOvr}</span>
+                              <span className="text-sm font-black px-2 py-0.5 rounded-lg" style={{ background: '#14532d', color: '#4ade80' }}>+{e.delta}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {regressed.length > 0 && (
+                  <div>
+                    <div className="text-xs font-bold uppercase mb-2" style={{ color: '#f87171' }}>Regressed</div>
+                    <div className="space-y-2">
+                      {regressed.map(e => {
+                        const p = league.players[e.playerId];
+                        const newOvr = p?.ratings.overall ?? 0;
+                        const oldOvr = newOvr - e.delta;
+                        return (
+                          <div key={e.playerId} className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: '#12151e', border: '1px solid #1e2235' }}>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-bold text-white text-sm truncate">{e.playerName}</div>
+                              <div className="text-xs mt-0.5" style={{ color: '#8b90a7' }}>{e.reason}</div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-sm font-mono" style={{ color: '#6b7280' }}>{oldOvr}</span>
+                              <span style={{ color: '#374151' }}>→</span>
+                              <span className="text-sm font-black text-white">{newOvr}</span>
+                              <span className="text-sm font-black px-2 py-0.5 rounded-lg" style={{ background: '#450a0a', color: '#f87171' }}>{e.delta}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {myEntries.length === 0 && (
+                  <div className="text-center py-6" style={{ color: '#6b7280' }}>No development changes recorded.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
