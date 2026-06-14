@@ -1,7 +1,7 @@
 import { useLeagueStore } from '../store/leagueStore';
 import PlayerPhoto from '../components/PlayerPhoto';
 import RatingBar from '../components/RatingBar';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { DraftProspect } from '../types';
 
 
@@ -170,6 +170,21 @@ export default function Draft() {
   const simToMyPick   = useLeagueStore(s => s.simToMyPick);
   const startNewSeason = useLeagueStore(s => s.startNewSeason);
   const scoutProspect = useLeagueStore(s => s.scoutProspect);
+  const [expiringPlayers, setExpiringPlayers] = useState<Array<{ id: string; name: string; position: string; overall: number; yearsLeft: number }> | null>(null);
+  const prevPhase = useRef(league?.phase);
+
+  useEffect(() => {
+    if (prevPhase.current === 'draft' && league?.phase === 'offseason') {
+      const userTeam = league.teams[league.userTeamId];
+      const expiring = userTeam?.rosterIds
+        .map(id => league.players[id])
+        .filter(p => p && p.ratings.overall >= 80 && (p.contract?.yearsLeft ?? 0) <= 1)
+        .map(p => ({ id: p.id, name: p.name, position: p.position, overall: p.ratings.overall, yearsLeft: p.contract?.yearsLeft ?? 0 }))
+        .sort((a, b) => b.overall - a.overall) ?? [];
+      if (expiring.length > 0) setExpiringPlayers(expiring);
+    }
+    prevPhase.current = league?.phase;
+  }, [league?.phase]);
 
   if (!league) return null;
 
@@ -212,6 +227,50 @@ export default function Draft() {
 
   return (
     <div>
+      {/* Expiring contract reminder modal */}
+      {expiringPlayers && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-md rounded-2xl overflow-hidden"
+            style={{ background: '#0d0f17', border: '1px solid #f59e0b55' }}>
+            <div className="px-6 py-5 text-center"
+              style={{ background: 'linear-gradient(135deg,#78350f,#451a03)', borderBottom: '1px solid #f59e0b44' }}>
+              <div className="text-3xl mb-1">⚠️</div>
+              <div className="text-xl font-black text-white">Expiring Contracts</div>
+              <div className="text-sm mt-0.5" style={{ color: '#fbbf24' }}>These stars are entering free agency soon</div>
+            </div>
+            <div className="p-5 space-y-2">
+              {expiringPlayers.map(p => (
+                <div key={p.id} className="flex items-center gap-3 rounded-xl p-3"
+                  style={{ background: '#12151e', border: '1px solid #f59e0b33' }}>
+                  <div className="flex-1">
+                    <div className="font-black text-white">{p.name}</div>
+                    <div className="text-xs mt-0.5" style={{ color: '#8b90a7' }}>{p.position}</div>
+                  </div>
+                  <div className="text-center px-3">
+                    <div className="text-xs" style={{ color: '#6b7280' }}>OVR</div>
+                    <div className="text-lg font-black text-white">{p.overall}</div>
+                  </div>
+                  <div className="text-center px-3">
+                    <div className="text-xs" style={{ color: '#6b7280' }}>Years Left</div>
+                    <div className="text-lg font-black" style={{ color: p.yearsLeft === 0 ? '#f87171' : '#facc15' }}>
+                      {p.yearsLeft === 0 ? 'UFA' : p.yearsLeft}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="px-5 pb-5">
+              <button onClick={() => setExpiringPlayers(null)}
+                className="w-full py-3 rounded-xl font-black text-sm transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg,#78350f,#92400e)', color: '#fbbf24' }}>
+                Got it — manage my roster
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-black text-white">{league.season} NBA Draft</h1>
