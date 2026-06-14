@@ -21,7 +21,7 @@ function buildRealPlayer(rp: import('./realRosters').RealPlayer, teamId: string,
   for (const key of Object.keys(scaledRatings)) {
     if (key !== 'overall') scaledRatings[key] = clamp(Math.round(scaledRatings[key] * scale), 25, 99);
   }
-  const ratings = { ...(scaledRatings as typeof base.ratings), overall: rp.ovr };
+  const ratings = { ...(scaledRatings as unknown as typeof base.ratings), overall: rp.ovr };
   const height = generateHeight(rp.pos as Position, rng);
   const tendency = deriveTendency(ratings, rp.pos as Position, height);
   const secondaryPosition = deriveSecondaryPosition(rp.pos as Position, ratings);
