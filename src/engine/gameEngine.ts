@@ -215,8 +215,8 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     const totalFg3m = ownFg3m + rcvFg3[i];
     const totalFg2m = ownFg2m + rcvFg2[i];
     const _totalFgm  = totalFg3m + totalFg2m; void _totalFgm;
-    const totalFga  = ownFga + rcvFg2[i] + rcvFg3[i];
-    const totalFg3a = ownFg3a + rcvFg3[i];
+    const totalFga  = Math.max(ownFga + rcvFg2[i] + rcvFg3[i], totalFg3m + totalFg2m + 1);
+    const totalFg3a = Math.max(ownFg3a + rcvFg3[i], totalFg3m + (totalFg3m > 0 ? 1 : 0));
 
     // Free throws: only own FGAs generate trips to the line
     const ftRate    = clamp((p.ratings.finishing - 40) / 180 + 0.04, 0.02, 0.18);
