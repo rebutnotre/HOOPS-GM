@@ -207,9 +207,9 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     const game3Pct  = clamp(randNormal(tend3Pct, 0.05, rng), 0.15, 0.52);
     // Real NBA: 2PT% ~52% league avg (mix of paint & mid). rating 30→38%, 99→58%
     const base2Pct  = clamp(0.38 + ((p.ratings.finishing + p.ratings.midRange) / 2 - 30) / 69 * 0.20, 0.34, 0.60);
-    const game2Pct  = clamp(randNormal(base2Pct, 0.05, rng), 0.28, 0.65);
-    const ownFg3m   = Math.round(ownFg3a * game3Pct);
-    const ownFg2m   = Math.round(ownFg2a * game2Pct);
+    const game2Pct  = clamp(randNormal(base2Pct, 0.12, rng), 0.20, 0.75);
+    const ownFg3m   = ownFg3a <= 1 ? (rng() < game3Pct ? 1 : 0) : Math.min(Math.round(ownFg3a * game3Pct), ownFg3a - 1);
+    const ownFg2m   = ownFg2a <= 1 ? (rng() < game2Pct ? 1 : 0) : Math.min(Math.round(ownFg2a * game2Pct), ownFg2a - 1);
 
     // Combine own makes with assisted makes received
     const totalFg3m = ownFg3m + rcvFg3[i];
