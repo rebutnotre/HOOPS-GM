@@ -4,6 +4,7 @@ import { generateRoster, generatePlayer, deriveTendency, deriveSecondaryPosition
 import { generateCoachPool } from './coachEngine';
 import { createRng, randBetween, randNormal, clamp } from './rng';
 import { REAL_ROSTERS } from './realRosters';
+import { calcOvrForPosition } from './progressionEngine';
 
 export type RosterMode = 'real' | 'generated';
 
@@ -13,7 +14,14 @@ function nextId() { return `player_${_playerCounter++}`; }
 function buildRealPlayer(rp: import('./realRosters').RealPlayer, teamId: string, seed: number): Player {
   const rng = createRng(seed);
   const base = generatePlayer(seed, rp.ovr, rp.pos as Position, rp.age);
-  const ratings = { ...base.ratings, overall: rp.ovr };
+  // Scale sub-ratings so calcOvrForPosition produces exactly rp.ovr
+  const rawOvr = calcOvrForPosition(base.ratings, rp.pos as Position);
+  const scale = rawOvr > 0 ? rp.ovr / rawOvr : 1;
+  const scaledRatings = { ...base.ratings } as Record<string, number>;
+  for (const key of Object.keys(scaledRatings)) {
+    if (key !== 'overall') scaledRatings[key] = clamp(Math.round(scaledRatings[key] * scale), 25, 99);
+  }
+  const ratings = { ...(scaledRatings as typeof base.ratings), overall: rp.ovr };
   const height = generateHeight(rp.pos as Position, rng);
   const tendency = deriveTendency(ratings, rp.pos as Position, height);
   const secondaryPosition = deriveSecondaryPosition(rp.pos as Position, ratings);
