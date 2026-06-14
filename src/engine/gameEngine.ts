@@ -193,11 +193,11 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
 
     // Target from scoring share, then subtract what assists already gave
     const scoringShare = totalScoringOpp > 0 ? scoringOpps[i] / totalScoringOpp : 1 / active.length;
-    const totalTarget  = Math.round(clamp(Math.round(randNormal(teamPoints * scoringShare, 4, rng)), 0, 55) * minFactor);
+    const totalTarget  = Math.round(clamp(Math.round(randNormal(teamPoints * scoringShare, 4, rng)), 0, 70) * minFactor);
     const ownTarget    = Math.max(0, totalTarget - assistedPts);
 
-    // Unassisted FGA
-    const ownFga  = ownTarget > 0 ? Math.max(1, Math.round(ownTarget / clamp(randNormal(1.15, 0.06, rng), 1.0, 1.35))) : 0;
+    // Unassisted FGA — lower divisor = more attempts
+    const ownFga  = ownTarget > 0 ? Math.max(1, Math.round(ownTarget / clamp(randNormal(1.05, 0.06, rng), 0.9, 1.2))) : 0;
     const shooting3Rate = clamp((p.ratings.shooting3 - 40) / 60 + randNormal(0, 0.07, rng), 0, 0.62);
     const ownFg3a = Math.round(ownFga * shooting3Rate);
     const ownFg2a = Math.max(ownFga - ownFg3a, 0);
@@ -219,7 +219,7 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     const totalFg3a = Math.max(ownFg3a + rcvFg3[i], totalFg3m + (totalFg3m > 0 ? 1 : 0));
 
     // Free throws: only own FGAs generate trips to the line
-    const ftRate    = clamp((p.ratings.finishing - 40) / 180 + 0.04, 0.02, 0.18);
+    const ftRate    = clamp((p.ratings.finishing - 40) / 120 + 0.06, 0.04, 0.28);
     const fta       = Math.round(ownFga * ftRate);
     const gameFtPct = clamp(randNormal(clamp((p.ratings.finishing - 30) / 100 + 0.45, 0.55, 0.95), 0.05, rng), 0.40, 1.0);
     const ftm       = Math.round(fta * gameFtPct);
