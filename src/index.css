@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+body {
+  background-color: #080a12;
+  color: #e8eaf0;
+  font-family: 'Inter', system-ui, sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* { box-sizing: border-box; }
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  text-align: left;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #252840; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #383d5c; }
+
+/* ── Ripple ──────────────────────────────────────────────────────── */
+@keyframes ripple {
+  0%   { transform: scale(0); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.ripple-span {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  transform: scale(0);
+  animation: ripple 0.55s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ── Page entrance ───────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fadeInUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.fade-in-up-delay-1 { animation-delay: 0.04s; }
+.fade-in-up-delay-2 { animation-delay: 0.08s; }
+.fade-in-up-delay-3 { animation-delay: 0.12s; }
+.fade-in-up-delay-4 { animation-delay: 0.16s; }
+
+/* ── Float (home page orbs) ──────────────────────────────────────── */
+@keyframes floatA {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  33%       { transform: translateY(-20px) translateX(10px); }
+  66%       { transform: translateY(8px) translateX(-7px); }
+}
+@keyframes floatB {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  40%       { transform: translateY(16px) translateX(-12px); }
+  70%       { transform: translateY(-10px) translateX(9px); }
+}
+.float-a { animation: floatA 9s ease-in-out infinite; }
+.float-b { animation: floatB 12s ease-in-out infinite; }
+
+/* ── Shimmer (loading / highlight) ──────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%);
+  background-size: 200% auto;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* ── Pulse glow ──────────────────────────────────────────────────── */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--glow-color, #6c63ff44); }
+  50%       { box-shadow: 0 0 0 6px var(--glow-color, #6c63ff00); }
+}
+.pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
+
+/* ── Score pop ───────────────────────────────────────────────────── */
+@keyframes scorePop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  60%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.score-pop { animation: scorePop 0.4s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* ── Card hover lift ─────────────────────────────────────────────── */
+.card-lift {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+}
+
+/* ── Spin (basketball) ───────────────────────────────────────────── */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin-slow { animation: spin-slow 14s linear infinite; }
+
+/* ── Win flash ───────────────────────────────────────────────────── */
+@keyframes winFlash {
+  0%   { background-color: rgba(74,222,128,0); }
+  30%  { background-color: rgba(74,222,128,0.1); }
+  100% { background-color: rgba(74,222,128,0); }
+}
+.win-flash { animation: winFlash 1s ease-out; }
+
+/* ── Gradient text ───────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #7c6eff, #a78bfa, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glass card ──────────────────────────────────────────────────── */
+.glass {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Nav active bar ──────────────────────────────────────────────── */
+.nav-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--tc, #6c63ff);
+}
+
+/* ── Glow text ───────────────────────────────────────────────────── */
+.glow-text {
+  text-shadow: 0 0 20px var(--glow-color, #6c63ff88);
+}
+
+/* ── Noise overlay (subtle texture) ─────────────────────────────── */
+.noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* ── Badge dot pulse ─────────────────────────────────────────────── */
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.7; }
+}
+.badge-pulse { animation: badgePulse 1.8s ease-in-out infinite; }

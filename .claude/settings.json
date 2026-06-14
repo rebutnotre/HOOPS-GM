@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -Command \"$port = Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue; if (-not $port) { Start-Process powershell -ArgumentList '-NoProfile -WindowStyle Hidden -Command Set-Location C:\\\\Users\\\\Admin\\\\basketball-gm; npm run dev' -WindowStyle Hidden }\"",
+            "shell": "powershell",
+            "async": true,
+            "statusMessage": "Starting dev server..."
+          }
+        ]
+      }
+    ]
+  }
+}
