@@ -149,8 +149,11 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
 
   // ── Step 2: Each assist becomes a made FG assigned to a weighted recipient ─
   // rcvFg2/rcvFg3 track how many assisted makes each player received
+  // rcvFg2Missed/rcvFg3Missed track open looks created by passers that still missed (~40% of opportunities)
   const rcvFg2 = new Array(active.length).fill(0);
   const rcvFg3 = new Array(active.length).fill(0);
+  const rcvFg2Missed = new Array(active.length).fill(0);
+  const rcvFg3Missed = new Array(active.length).fill(0);
 
   active.forEach((assister, i) => {
     const ast = astCounts[i];
@@ -179,6 +182,13 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
       if (active[rec].ratings.shooting3 >= 50 || rng() < 0.25) rcvFg3[rec]++;
       else rcvFg2[rec]++;
     }
+
+    // Open looks that didn't convert — adds FGA without FGM to bring team FG% to realistic levels
+    const missedOpps = Math.round(ast * 0.67);
+    const fg3astMissed = clamp(Math.round(missedOpps * threeRate), 0, missedOpps);
+    const fg2astMissed = missedOpps - fg3astMissed;
+    for (let k = 0; k < fg2astMissed; k++) rcvFg2Missed[pickRecipient()]++;
+    for (let k = 0; k < fg3astMissed; k++) rcvFg3Missed[pickRecipient()]++;
   });
 
   // ── Step 3: Each player generates their own unassisted scoring ─────────────
@@ -202,12 +212,13 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     const ownFg3a = Math.round(ownFga * shooting3Rate);
     const ownFg2a = Math.max(ownFga - ownFg3a, 0);
 
-    // Real NBA: league-avg 3PT% ~36%, elite ~40%. rating 30→28%, 99→40%
-    const tend3Pct  = clamp(0.28 + (p.ratings.shooting3 - 30) / 69 * 0.12, 0.22, 0.40);
-    const game3Pct  = clamp(randNormal(tend3Pct, 0.06, rng), 0.14, 0.44);
-    // Real NBA: 2PT% ~52% league avg. rating 30→36%, 99→52%
-    const base2Pct  = clamp(0.36 + ((p.ratings.finishing + p.ratings.midRange) / 2 - 30) / 69 * 0.16, 0.32, 0.52);
-    const game2Pct  = clamp(randNormal(base2Pct, 0.07, rng), 0.24, 0.60);
+    // 3PT%: tied directly to shooting3 rating. rating 30→27%, 65→34%, 99→40%
+    const tend3Pct  = clamp(0.27 + (p.ratings.shooting3 - 30) / 69 * 0.13, 0.22, 0.40);
+    const game3Pct  = clamp(randNormal(tend3Pct, 0.055, rng), 0.15, 0.46);
+    // 2PT%: weighted blend of finishing (paint), midRange, and scoring per user request
+    const raw2Rating = p.ratings.finishing * 0.40 + p.ratings.midRange * 0.35 + p.ratings.scoring * 0.25;
+    const base2Pct  = clamp(0.37 + (raw2Rating - 30) / 69 * 0.18, 0.34, 0.55);
+    const game2Pct  = clamp(randNormal(base2Pct, 0.055, rng), 0.25, 0.62);
     const ownFg3m   = ownFg3a <= 1 ? (rng() < game3Pct ? 1 : 0) : Math.min(Math.round(ownFg3a * game3Pct), ownFg3a - 1);
     const ownFg2m   = ownFg2a <= 1 ? (rng() < game2Pct ? 1 : 0) : Math.min(Math.round(ownFg2a * game2Pct), ownFg2a - 1);
 
@@ -215,8 +226,8 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
     const totalFg3m = ownFg3m + rcvFg3[i];
     const totalFg2m = ownFg2m + rcvFg2[i];
     const _totalFgm  = totalFg3m + totalFg2m; void _totalFgm;
-    const totalFga  = Math.max(ownFga + rcvFg2[i] + rcvFg3[i], totalFg3m + totalFg2m + 1);
-    const totalFg3a = Math.max(ownFg3a + rcvFg3[i], totalFg3m + (totalFg3m > 0 ? 1 : 0));
+    const totalFga  = Math.max(ownFga + rcvFg2[i] + rcvFg3[i] + rcvFg2Missed[i] + rcvFg3Missed[i], totalFg3m + totalFg2m + 1);
+    const totalFg3a = Math.max(ownFg3a + rcvFg3[i] + rcvFg3Missed[i], totalFg3m + (totalFg3m > 0 ? 1 : 0));
 
     // Free throws: only own FGAs generate trips to the line
     const ftRate    = clamp((p.ratings.finishing - 40) / 120 + 0.06, 0.04, 0.28);
@@ -288,8 +299,9 @@ function generateBoxScores(players: Player[], teamPoints: number, rng: () => num
       const newFg3m = Math.round((stats.fg3m ?? 0) * scale);
       const newFg2m = Math.round(((stats.fgm ?? 0) - (stats.fg3m ?? 0)) * scale);
       const newFtm  = Math.round((stats.ftm  ?? 0) * scale);
-      const newFg3a = Math.max(Math.round((stats.fg3a ?? 0) * scale), newFg3m);
-      const newFga  = Math.max(Math.round((stats.fga  ?? 0) * scale), newFg3m + newFg2m);
+      const totalMakesN = newFg3m + newFg2m;
+      const newFg3a = Math.max(Math.round((stats.fg3a ?? 0) * scale), newFg3m + (newFg3m >= 2 ? 1 : 0));
+      const newFga  = Math.max(Math.round((stats.fga  ?? 0) * scale), totalMakesN + (totalMakesN >= 2 ? 1 : 0));
       map.set(id, {
         ...stats,
         points: clamp(newFg3m * 3 + newFg2m * 2 + newFtm, 0, 60),
