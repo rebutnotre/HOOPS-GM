@@ -159,9 +159,10 @@ export function generateRoster(teamSeed: number): Player[] {
   const roster: Player[] = [];
   const positions: Position[] = ['PG', 'SG', 'SF', 'PF', 'C'];
 
-  // 1 star (85+), 2 starters (75-84), 3 rotation (65-74), rest bench
+  // 1 star; ~1-in-5 teams get a superstar (95-99), the rest get a solid star (82-92)
+  const superstar = rng() < 0.20;
   const overalls = [
-    randBetween(82, 92, rng),
+    superstar ? randBetween(95, 99, rng) : randBetween(82, 92, rng),
     randBetween(75, 84, rng),
     randBetween(72, 80, rng),
     randBetween(68, 76, rng),
