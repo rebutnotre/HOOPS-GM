@@ -20,7 +20,7 @@ export const TEAM_TEMPLATES: Omit<Team, 'rosterIds' | 'stats' | 'salary' | 'capS
   { id: 't10', name: 'Bucks',        city: 'Milwaukee',     abbreviation: 'MIL', primaryColor: '#00471B', secondaryColor: '#EEE1C6', conference: 'East', division: 'Central' },
   { id: 't11', name: 'Hawks',        city: 'Atlanta',       abbreviation: 'ATL', primaryColor: '#C1272D', secondaryColor: '#FDB927', conference: 'East', division: 'Southeast' },
   { id: 't12', name: 'Hornets',      city: 'Charlotte',     abbreviation: 'CHA', primaryColor: '#00788C', secondaryColor: '#1D1160', conference: 'East', division: 'Southeast' },
-  { id: 't13', name: 'Heat',         city: 'Miami',         abbreviation: 'MIA', primaryColor: '#F9A01B', secondaryColor: '#98002E', conference: 'East', division: 'Southeast' },
+  { id: 't13', name: 'Heat',         city: 'Miami',         abbreviation: 'MIA', primaryColor: '#98002E', secondaryColor: '#F9A01B', conference: 'East', division: 'Southeast' },
   { id: 't14', name: 'Magic',        city: 'Orlando',       abbreviation: 'ORL', primaryColor: '#0077C0', secondaryColor: '#C4CED4', conference: 'East', division: 'Southeast' },
   { id: 't15', name: 'Wizards',      city: 'Washington',    abbreviation: 'WAS', primaryColor: '#E31837', secondaryColor: '#002B5C', conference: 'East', division: 'Southeast' },
   { id: 't16', name: 'Nuggets',      city: 'Denver',        abbreviation: 'DEN', primaryColor: '#FEC524', secondaryColor: '#0E2240', conference: 'West', division: 'Northwest' },
