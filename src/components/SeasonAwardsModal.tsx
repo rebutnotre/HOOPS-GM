@@ -2,6 +2,7 @@ import type { SeasonAwards, LeagueState } from '../types';
 import PlayerPhoto from './PlayerPhoto';
 import { OverallBadge } from './RatingBar';
 import { useRipple } from './Ripple';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   awards: SeasonAwards;
@@ -56,6 +57,7 @@ function AwardCard({ icon, title, playerId, teamId, value, league, isUser }: {
 
 export default function SeasonAwardsModal({ awards, league, onClose }: Props) {
   const { addRipple, rippleEls } = useRipple();
+  const navigate = useNavigate();
   const userTeamId = league.userTeamId;
 
   function isUserPlayer(playerId?: string) {
@@ -166,7 +168,7 @@ export default function SeasonAwardsModal({ awards, league, onClose }: Props) {
         </div>
 
         <div className="px-5 pb-5">
-          <button onClick={(e) => { addRipple(e); onClose(); }}
+          <button onClick={(e) => { addRipple(e); onClose(); navigate('/playoffs'); }}
             className="w-full py-3 rounded-xl font-black text-sm transition-all hover:opacity-90 active:scale-95 relative overflow-hidden"
             style={{ background: 'linear-gradient(135deg,#78350f,#92400e)', color: '#fbbf24' }}>
             {rippleEls}
