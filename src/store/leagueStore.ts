@@ -17,7 +17,7 @@ import { developPlayer, calcOvrForPosition } from '../engine/progressionEngine';
 import { deriveTendency, deriveSecondaryPosition, generateHeight } from '../engine/playerGen';
 import { createRng, clamp } from '../engine/rng';
 import { evaluateTrade, playerValue, tradeValue as tradeVal } from '../engine/tradeEngine';
-import { SALARY_CAP, LUXURY_TAX_LINE, HARD_CAP, MLE_AMOUNT, TAXPAYER_MLE, VET_MIN } from '../engine/teamData';
+import { SALARY_CAP, LUXURY_TAX_LINE, HARD_CAP, MLE_AMOUNT, TAXPAYER_MLE, VET_MIN, TEAM_TEMPLATES } from '../engine/teamData';
 import { generateDraftClass, runDraftLottery, executeDraftPick } from '../engine/draftEngine';
 import {
   TRADE_DEADLINE_DAY, REGULAR_SEASON_DAYS,
@@ -2074,6 +2074,20 @@ export const useLeagueStore = create<LeagueStore>()(
         if (state && !state.savedSlots) state.savedSlots = [];
         if (state?.league) {
           state.league = migrateSalaries(state.league);
+          // Patch team colors from TEAM_TEMPLATES so color fixes take effect on existing saves
+          {
+            const updatedTeams = { ...state.league.teams };
+            for (const tmpl of TEAM_TEMPLATES) {
+              if (updatedTeams[tmpl.id]) {
+                updatedTeams[tmpl.id] = {
+                  ...updatedTeams[tmpl.id],
+                  primaryColor: tmpl.primaryColor,
+                  secondaryColor: tmpl.secondaryColor,
+                };
+              }
+            }
+            state.league = { ...state.league, teams: updatedTeams };
+          }
           // Recalculate every player's OVR using position-specific weights
           // and auto-assign secondary positions if not already set
           const updatedPlayers = { ...state.league.players };
