@@ -14,7 +14,7 @@ export const TEAM_TEMPLATES: Omit<Team, 'rosterIds' | 'stats' | 'salary' | 'capS
   { id: 't4',  name: '76ers',        city: 'Philadelphia',  abbreviation: 'PHI', primaryColor: '#006BB6', secondaryColor: '#ED174C', conference: 'East', division: 'Atlantic' },
   { id: 't5',  name: 'Raptors',      city: 'Toronto',       abbreviation: 'TOR', primaryColor: '#CE1141', secondaryColor: '#000000', conference: 'East', division: 'Atlantic' },
   { id: 't6',  name: 'Bulls',        city: 'Chicago',       abbreviation: 'CHI', primaryColor: '#CE1141', secondaryColor: '#000000', conference: 'East', division: 'Central' },
-  { id: 't7',  name: 'Cavaliers',    city: 'Cleveland',     abbreviation: 'CLE', primaryColor: '#FDBB30', secondaryColor: '#860038', conference: 'East', division: 'Central' },
+  { id: 't7',  name: 'Cavaliers',    city: 'Cleveland',     abbreviation: 'CLE', primaryColor: '#860038', secondaryColor: '#FDBB30', conference: 'East', division: 'Central' },
   { id: 't8',  name: 'Pistons',      city: 'Detroit',       abbreviation: 'DET', primaryColor: '#C8102E', secondaryColor: '#006BB6', conference: 'East', division: 'Central' },
   { id: 't9',  name: 'Pacers',       city: 'Indiana',       abbreviation: 'IND', primaryColor: '#FDBB30', secondaryColor: '#002D62', conference: 'East', division: 'Central' },
   { id: 't10', name: 'Bucks',        city: 'Milwaukee',     abbreviation: 'MIL', primaryColor: '#00471B', secondaryColor: '#EEE1C6', conference: 'East', division: 'Central' },
