@@ -40,8 +40,30 @@ function ageCeiling(age: number): number {
   return 58; // 38+: twilight years
 }
 
+function updatedPotential(player: Player, rng: () => number): number {
+  const { age, potential, ratings, seasonStats } = player;
+  // Only young players can raise their ceiling
+  if (age > 26) return potential;
+  const gp = seasonStats?.gamesPlayed ?? 0;
+  if (gp < 20) return potential;
+  const ppg = (seasonStats?.points ?? 0) / gp;
+  const rpg = (seasonStats?.rebounds ?? 0) / gp;
+  const apg = (seasonStats?.assists ?? 0) / gp;
+  // Performance score — star-level production raises ceiling
+  const perfScore = ppg * 0.5 + rpg * 0.3 + apg * 0.3;
+  // Base chance: elite production (25+ equiv) = ~30% chance to raise pot by 1-3
+  const chance = age <= 21 ? 0.30 : age <= 23 ? 0.20 : 0.12;
+  if (perfScore >= 12 && rng() < chance) {
+    const bump = perfScore >= 20 ? (rng() < 0.4 ? 3 : 2) : 1;
+    return clamp(potential + bump, potential, 99);
+  }
+  return potential;
+}
+
 export function developPlayer(player: Player, rng: () => number, developmentRating?: number, progressionMult = 1.0): { player: Player; ovrDelta: number; reason: string; hadBreakout?: boolean } {
-  const { age, potential, ratings } = player;
+  const { age } = player;
+  const potential = updatedPotential(player, rng);
+  const { ratings } = player;
 
   // Base rate by age — positive = growth, negative = decline
   const baseDev =
@@ -67,7 +89,7 @@ export function developPlayer(player: Player, rng: () => number, developmentRati
     r2.overall = recalcOverall(r2, player.position);
     const actualDelta = r2.overall - ratings.overall;
     return {
-      player: { ...player, ratings: r2, previousOvr: ratings.overall, hadBreakoutSeason: false },
+      player: { ...player, potential, ratings: r2, previousOvr: ratings.overall, hadBreakoutSeason: false },
       ovrDelta: actualDelta,
       reason: ['Sophomore slump', 'Struggled to replicate breakout year', 'Defenses adjusted'][Math.floor(rng() * 3)],
     };
@@ -102,7 +124,7 @@ export function developPlayer(player: Player, rng: () => number, developmentRati
   let reason = '';
   if (delta === 0) {
     reason = pick(['Held steady', 'Consistent year', 'No significant change']);
-    return { player: { ...player, previousOvr: ratings.overall }, ovrDelta: 0, reason };
+    return { player: { ...player, potential, previousOvr: ratings.overall }, ovrDelta: 0, reason };
   }
 
   const r = { ...ratings };
@@ -177,7 +199,7 @@ export function developPlayer(player: Player, rng: () => number, developmentRati
   }
 
   return {
-    player: { ...player, ratings: r, previousOvr: ratings.overall, hadBreakoutSeason: hadBreakout ? true : false },
+    player: { ...player, potential, ratings: r, previousOvr: ratings.overall, hadBreakoutSeason: hadBreakout ? true : false },
     ovrDelta,
     reason,
     hadBreakout,
