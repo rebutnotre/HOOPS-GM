@@ -75,7 +75,7 @@ function ReSignModal({ player, onClose, onSubmit }: {
 }) {
   const mv = marketValue(player.ratings.overall);
   const [salary, setSalary] = useState(parseFloat(mv.toFixed(2)));
-  const [years, setYears] = useState(Math.min(4, Math.max(1, player.contract.yearsLeft)));
+  const [years, setYears] = useState(3);
 
   const ratio = salary / mv;
   const vibeColor = ratio >= 0.95 ? '#4ade80' : ratio >= 0.82 ? '#facc15' : ratio >= 0.68 ? '#fb923c' : '#f87171';
