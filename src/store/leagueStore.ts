@@ -1923,11 +1923,12 @@ export const useLeagueStore = create<LeagueStore>()(
           const salaryDiff = salary - player.contract.salary;
           const newSalary = parseFloat((userTeam.salary + salaryDiff).toFixed(2));
           const newCap = parseFloat((userTeam.capSpace - salaryDiff).toFixed(2));
-          const newPlayers = { ...league.players, [playerId]: { ...player, freshContract: true, contract: { salary, yearsLeft: years } } };
+          const totalYears = (player.contract.yearsLeft ?? 0) + years;
+          const newPlayers = { ...league.players, [playerId]: { ...player, freshContract: true, contract: { salary, yearsLeft: totalYears } } };
           const newTeams = { ...league.teams, [league.userTeamId]: { ...userTeam, salary: newSalary, capSpace: newCap } };
           const news = addNews(league.news, {
             date: `Day ${league.week}`,
-            headline: `${player.name} signed a ${years}-year, $${salary.toFixed(2)}M/yr extension.`,
+            headline: `${player.name} signed a ${years}-year extension ($${salary.toFixed(2)}M/yr) — ${totalYears} years total.`,
             type: 'sigining',
           });
           set({ league: { ...league, players: newPlayers, teams: newTeams, news } });

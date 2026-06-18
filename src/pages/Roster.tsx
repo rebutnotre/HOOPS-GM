@@ -125,7 +125,10 @@ function ReSignModal({ player, onClose, onSubmit }: {
 
         {/* Years selector */}
         <div className="mb-5">
-          <label className="text-xs font-semibold uppercase tracking-widest block mb-2" style={{ color: '#8b90a7' }}>Contract Length</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#8b90a7' }}>Extension Length</label>
+            <span className="text-xs" style={{ color: '#6b7280' }}>{player.contract.yearsLeft}yr left → <span className="font-bold text-white">{player.contract.yearsLeft + years}yr total</span></span>
+          </div>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map(y => (
               <button
@@ -137,7 +140,7 @@ function ReSignModal({ player, onClose, onSubmit }: {
                   color: years === y ? '#fff' : '#8b90a7',
                   border: `1px solid ${years === y ? '#6c63ff' : '#2e3248'}`,
                 }}>
-                {y}yr
+                +{y}yr
               </button>
             ))}
           </div>
