@@ -41,7 +41,7 @@ function ageCeiling(age: number): number {
 }
 
 function updatedPotential(player: Player, rng: () => number): number {
-  const { age, potential, ratings, seasonStats } = player;
+  const { age, potential, seasonStats } = player;
   // Only young players can raise their ceiling
   if (age > 26) return potential;
   const gp = seasonStats?.gamesPlayed ?? 0;
