@@ -61,9 +61,8 @@ function updatedPotential(player: Player, rng: () => number): number {
 }
 
 export function developPlayer(player: Player, rng: () => number, developmentRating?: number, progressionMult = 1.0): { player: Player; ovrDelta: number; reason: string; hadBreakout?: boolean } {
-  const { age } = player;
+  const { age, ratings } = player;
   const potential = updatedPotential(player, rng);
-  const { ratings } = player;
 
   // Base rate by age — positive = growth, negative = decline
   const baseDev =
