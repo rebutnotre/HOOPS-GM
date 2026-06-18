@@ -26,7 +26,7 @@ export function generateDraftClass(season: number, count = 60, rookieQuality: 'w
     const scoutedRating = clamp(player.ratings.overall + noise, 40, 99);
     // Potential: younger players can have higher ceilings
     const ageFactor = Math.max(0, 22 - age); // 0-4 extra points for being young
-    const potential = clamp(targetOverall + randBetween(5, 20, rng) + ageFactor, targetOverall, 99);
+    const potential = clamp(targetOverall + randBetween(5, 20, rng) + ageFactor, player.ratings.overall, 99);
 
     prospects.push({
       id: `prospect_${season}_${i}`,
