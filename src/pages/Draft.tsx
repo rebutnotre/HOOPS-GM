@@ -224,6 +224,9 @@ export default function Draft() {
   const userNextPickIdx       = draftOrder.findIndex((id, i) => i >= currentPickIndex && id === league.userTeamId);
   const picksUntilUser        = userNextPickIdx - currentPickIndex;
   const prospects             = [...league.draftProspects];
+  const totalTeams            = Object.keys(league.teams).length;
+  const currentRound          = currentPickIndex < totalTeams ? 1 : 2;
+  const pickInRound           = currentPickIndex < totalTeams ? currentPickIndex + 1 : currentPickIndex - totalTeams + 1;
 
   return (
     <div>
@@ -275,7 +278,7 @@ export default function Draft() {
         <div>
           <h1 className="text-2xl font-black text-white">{league.season} NBA Draft</h1>
           <p className="text-sm mt-1" style={{ color: '#8b90a7' }}>
-            Pick #{currentPickIndex + 1} of {draftOrder.length}
+            Round {currentRound}, Pick #{pickInRound} (Overall #{currentPickIndex + 1})
             {currentTeamId && ` · On the clock: ${league.teams[currentTeamId]?.city} ${league.teams[currentTeamId]?.name}`}
           </p>
         </div>
@@ -332,14 +335,23 @@ export default function Draft() {
       {/* Draft order strip */}
       <div className="mb-5 flex gap-1.5 overflow-x-auto pb-2">
         {draftOrder.slice(currentPickIndex, currentPickIndex + 15).map((teamId, i) => {
+          const absIdx = currentPickIndex + i;
+          const round = absIdx < totalTeams ? 1 : 2;
+          const pickNum = absIdx < totalTeams ? absIdx + 1 : absIdx - totalTeams + 1;
           const team = league.teams[teamId];
           const isUser = teamId === league.userTeamId;
           const isCurrent = i === 0;
+          const showRoundBreak = i > 0 && absIdx === totalTeams;
           return (
-            <div key={i} className="shrink-0 flex flex-col items-center px-2.5 py-2 rounded-lg text-center min-w-[52px]"
-              style={{ background: isCurrent ? '#6c63ff' : isUser ? '#6c63ff22' : '#12151e', border: `1px solid ${isCurrent ? '#6c63ff' : isUser ? '#6c63ff44' : '#1e2235'}` }}>
-              <div className="text-xs font-bold" style={{ color: isCurrent ? '#fff' : '#8b90a7' }}>#{currentPickIndex + i + 1}</div>
-              <div className="text-xs font-black mt-0.5" style={{ color: isCurrent ? '#fff' : isUser ? '#6c63ff' : '#c5c9d8' }}>{team?.abbreviation}</div>
+            <div key={i} className="flex items-center gap-1.5">
+              {showRoundBreak && (
+                <div className="shrink-0 px-2 py-1 rounded text-xs font-black" style={{ background: '#1e2235', color: '#a78bfa' }}>R2</div>
+              )}
+              <div className="shrink-0 flex flex-col items-center px-2.5 py-2 rounded-lg text-center min-w-[52px]"
+                style={{ background: isCurrent ? '#6c63ff' : isUser ? '#6c63ff22' : '#12151e', border: `1px solid ${isCurrent ? '#6c63ff' : isUser ? '#6c63ff44' : '#1e2235'}` }}>
+                <div className="text-xs font-bold" style={{ color: isCurrent ? '#fff' : '#8b90a7' }}>R{round}#{pickNum}</div>
+                <div className="text-xs font-black mt-0.5" style={{ color: isCurrent ? '#fff' : isUser ? '#6c63ff' : '#c5c9d8' }}>{team?.abbreviation}</div>
+              </div>
             </div>
           );
         })}

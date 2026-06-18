@@ -92,8 +92,23 @@ export function runDraftLottery(teams: Team[], season: number, useLottery = true
 
   const remaining = sorted.map(t => t.id).filter(id => !usedOriginal.has(id)).reverse();
 
-  // Map each slot's original team → whoever holds their pick (a team can appear 0 or 2+ times)
-  return [...lotteryOriginal, ...remaining].map(origId => pickHolder[origId]);
+  // Round 1: lottery order mapped to actual pick holders
+  const round1 = [...lotteryOriginal, ...remaining].map(origId => pickHolder[origId]);
+
+  // Round 2: build holder map for R2 picks, default to own team
+  const r2PickHolder: Record<string, string> = {};
+  teams.forEach(team => {
+    team.draftPicks
+      .filter(p => p.round === 2 && p.year === season)
+      .forEach(p => { r2PickHolder[p.fromTeamId] = p.currentTeamId; });
+  });
+  sorted.forEach(team => {
+    if (!r2PickHolder[team.id]) r2PickHolder[team.id] = team.id;
+  });
+  // Round 2 order: reverse standings (worst pick last in R2, best record picks 31st)
+  const round2 = [...sorted].reverse().map(t => r2PickHolder[t.id]);
+
+  return [...round1, ...round2];
 }
 
 export function executeDraftPick(
